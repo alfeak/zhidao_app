@@ -43,10 +43,18 @@
         .katex-display {
             overflow-x: auto;
             overflow-y: hidden;
-            padding: 8px 0;
+            padding: 12px 0;
+            margin: 1em 0;
             display: block;
-            white-space: nowrap;
             -webkit-overflow-scrolling: touch;
+        }
+
+        /* Ensure tags (labels) stay at the far right and don't overlap */
+        .katex-display > .katex {
+            display: inline-block;
+            white-space: nowrap;
+            min-width: 100%;
+            text-align: center;
         }
 
         /* Prevent overlap and ensure formulas take full width if needed */
