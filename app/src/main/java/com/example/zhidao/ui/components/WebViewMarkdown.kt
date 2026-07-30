@@ -57,7 +57,28 @@ fun WebViewMarkdown(
                         view: WebView,
                         request: WebResourceRequest
                     ): WebResourceResponse? {
-                        return assetLoader.shouldInterceptRequest(request.url)
+                        val url = request.url.toString()
+                        
+                        // 1. Let assetLoader handle local assets (index.html, css, js)
+                        val assetResponse = assetLoader.shouldInterceptRequest(request.url)
+                        if (assetResponse != null) return assetResponse
+
+                        // 2. Intercept remote HTTP images to bypass "Mixed Content" blocking
+                        // This allows an HTTPS page to load HTTP images by fetching them via native code
+                        if (url.startsWith("http") && url.contains("/api/papers/") && url.contains("/assets/")) {
+                            return try {
+                                val connection = java.net.URL(url).openConnection() as java.net.HttpURLConnection
+                                connection.connectTimeout = 10000
+                                connection.readTimeout = 10000
+                                val contentType = connection.contentType ?: "image/*"
+                                WebResourceResponse(contentType, connection.contentEncoding, connection.inputStream)
+                            } catch (e: Exception) {
+                                android.util.Log.e("WebViewMarkdown", "Failed to proxy image: $url", e)
+                                null
+                            }
+                        }
+                        
+                        return null
                     }
 
                     override fun onPageFinished(view: WebView?, url: String?) {
@@ -93,7 +114,7 @@ fun WebViewMarkdown(
                     }
                 }, "Android")
 
-                loadUrl("http://appassets.androidplatform.net/assets/markdown/index.html")
+                loadUrl("https://appassets.androidplatform.net/assets/markdown/index.html")
             }
         },
         update = { },
