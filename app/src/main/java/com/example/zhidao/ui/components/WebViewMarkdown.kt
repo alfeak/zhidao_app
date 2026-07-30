@@ -71,6 +71,13 @@ fun WebViewMarkdown(
                                     connection.readTimeout = 15000
                                     connection.requestMethod = "GET"
                                     
+                                    val responseCode = connection.responseCode
+                                    if (responseCode >= 400) {
+                                        val errorMsg = connection.errorStream?.bufferedReader()?.readText() ?: "No error body"
+                                        android.util.Log.e("WebViewMarkdown", "Server returned $responseCode for path: $targetUrl - Error: $errorMsg")
+                                        return null
+                                    }
+
                                     val contentType = connection.contentType ?: "image/*"
                                     WebResourceResponse(contentType, connection.contentEncoding, connection.inputStream)
                                 } catch (e: Exception) {

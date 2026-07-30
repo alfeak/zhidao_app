@@ -13,12 +13,13 @@ config = ConfigRepository()
 auth_service = AuthService()
 
 def extract_session_id(request: Request, cookie_session: str | None = None) -> str | None:
-    if cookie_session:
-        return cookie_session
     # Support token in query params for assets (<img> tags in WebView)
+    # Token param is prioritized to avoid issues with stale cookies in WebViews
     token_param = request.query_params.get("token")
     if token_param:
         return token_param
+    if cookie_session:
+        return cookie_session
     auth_header = request.headers.get("Authorization", "")
     if auth_header.startswith("Bearer "):
         return auth_header[7:].strip()
@@ -202,7 +203,17 @@ def get_layout_boxes(request: Request, paper_id: str, zhidao_session: str | None
 def get_paper_asset(request: Request, paper_id: str, asset_path: str, zhidao_session: str | None = Cookie(None)):
     user = get_current_user_from_req(request, zhidao_session)
     user_id = user["id"] if user else None
-    artifact = papers.artifact(paper_id, asset_path)
+
+    # 1. Try exact match
+    artifact = papers.papers.artifact(paper_id, asset_path)
+
+    # 2. If not found, try prepending 'assets/' (common MinerU path mismatch)
+    if not artifact and not asset_path.startswith("assets/"):
+        artifact = papers.papers.artifact(paper_id, f"assets/{asset_path}")
+
+    if not artifact:
+        raise HTTPException(status_code=404, detail=f"Asset not found: {asset_path}")
+
     from .infrastructure.object_store import R2ObjectStore
     body, media_type = R2ObjectStore(user_id=user_id).stream(artifact.object_key)
     return StreamingResponse(body.iter_chunks(), media_type=media_type)
