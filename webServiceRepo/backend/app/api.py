@@ -15,6 +15,10 @@ auth_service = AuthService()
 def extract_session_id(request: Request, cookie_session: str | None = None) -> str | None:
     if cookie_session:
         return cookie_session
+    # Support token in query params for assets (<img> tags in WebView)
+    token_param = request.query_params.get("token")
+    if token_param:
+        return token_param
     auth_header = request.headers.get("Authorization", "")
     if auth_header.startswith("Bearer "):
         return auth_header[7:].strip()

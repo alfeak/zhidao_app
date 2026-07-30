@@ -14,17 +14,19 @@ import org.json.JSONObject
 fun WebViewMarkdown(
     markdown: String,
     baseUrl: String,
+    sessionId: String,
     modifier: Modifier = Modifier
 ) {
     var webViewRef by remember { mutableStateOf<WebView?>(null) }
 
     // Update content when markdown or baseUrl changes
-    LaunchedEffect(markdown, baseUrl, webViewRef) {
+    LaunchedEffect(markdown, baseUrl, sessionId, webViewRef) {
         webViewRef?.let { webView ->
             val data = JSONObject().apply {
                 put("type", "update")
                 put("markdown", markdown)
                 put("baseUrl", baseUrl)
+                put("sessionId", sessionId)
             }
             webView.evaluateJavascript("window.postMessage(${data}, '*')", null)
         }
@@ -66,6 +68,7 @@ fun WebViewMarkdown(
                             put("type", "update")
                             put("markdown", markdown)
                             put("baseUrl", baseUrl)
+                            put("sessionId", sessionId)
                         }
                         view?.evaluateJavascript("window.postMessage(${data}, '*')", null)
                     }

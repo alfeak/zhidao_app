@@ -37,6 +37,7 @@ fun MainScreen(viewModel: MainViewModel) {
     val searchQuery by viewModel.searchQuery.collectAsState()
     val isSearching by viewModel.isSearching.collectAsState()
     val baseUrl by viewModel.baseUrl.collectAsState()
+    val sessionId by viewModel.sessionId.collectAsState()
     val lastError by viewModel.lastError.collectAsState()
     
     val drawerState = rememberDrawerState(initialValue = DrawerValue.Closed)
@@ -155,7 +156,8 @@ fun MainScreen(viewModel: MainViewModel) {
                     ReaderView(
                         content = markdown.content,
                         paperId = activePaper?.id ?: "",
-                        baseUrl = baseUrl ?: ""
+                        baseUrl = baseUrl ?: "",
+                        sessionId = sessionId ?: ""
                     )
                 } ?: Box(
                     modifier = Modifier.fillMaxSize(),
@@ -223,7 +225,7 @@ fun PaperCard(
 }
 
 @Composable
-fun ReaderView(content: String, paperId: String, baseUrl: String) {
+fun ReaderView(content: String, paperId: String, baseUrl: String, sessionId: String) {
     // We use a Box instead of LazyColumn because WebView handles its own scrolling
     // or we can use fillMaxWidth() and let WebView take as much height as it needs.
     // However, WRAP_CONTENT with WebView in a LazyColumn is notoriously difficult.
@@ -238,6 +240,7 @@ fun ReaderView(content: String, paperId: String, baseUrl: String) {
         WebViewMarkdown(
             markdown = content,
             baseUrl = assetBaseUrl,
+            sessionId = sessionId,
             modifier = Modifier.fillMaxSize()
         )
     }
