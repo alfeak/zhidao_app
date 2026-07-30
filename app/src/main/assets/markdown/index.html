@@ -103,7 +103,7 @@
 
             renderer.image = ({ href, title, text }) => {
                 const src = resolveImageSource(href, baseUrl);
-                console.log('Rendering image:', { original: href, resolved: src });
+                console.log('Rendering image:', JSON.stringify({ original: href, resolved: src }));
                 let out = `<img src="${src}" alt="${text || ''}"`;
                 if (title) {
                     out += ` title="${title}"`;
@@ -138,6 +138,7 @@
         // Listen for messages from the Android app
         window.addEventListener('message', (event) => {
             const data = event.data;
+            console.log('Received message from Android:', JSON.stringify(data));
             if (data && data.type === 'update') {
                 updateContent(data.markdown, data.baseUrl, data.sessionId);
             }

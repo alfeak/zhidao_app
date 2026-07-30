@@ -93,7 +93,7 @@ fun WebViewMarkdown(
                     }
                 }, "Android")
 
-                loadUrl("https://appassets.androidplatform.net/assets/markdown/index.html")
+                loadUrl("http://appassets.androidplatform.net/assets/markdown/index.html")
             }
         },
         update = { },
