@@ -87,14 +87,15 @@
 
             // Construct full URL
             // baseUrl is expected to be something like: https://server/api/papers/{id}/assets
-            let fullUrl = baseUrl.endsWith('/') ? baseUrl + assetPath : baseUrl + '/' + assetPath;
+            let originalUrl = baseUrl.endsWith('/') ? baseUrl + assetPath : baseUrl + '/' + assetPath;
 
             // Append token for authentication if available
             if (currentSessionId) {
-                fullUrl += (fullUrl.includes('?') ? '&' : '?') + 'token=' + encodeURIComponent(currentSessionId);
+                originalUrl += (originalUrl.includes('?') ? '&' : '?') + 'token=' + encodeURIComponent(currentSessionId);
             }
 
-            return fullUrl;
+            // Wrap in a same-origin proxy URL to bypass Mixed Content blocking and automatic HTTPS upgrades
+            return 'https://appassets.androidplatform.net/proxy?url=' + encodeURIComponent(originalUrl);
         }
 
         function updateContent(markdown, baseUrl, sessionId) {
